@@ -15,12 +15,20 @@ import static org.junit.Assert.*;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class ExampleInstrumentedTest {
+public class TimeClassInstrumentedTests {
     @Test
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         assertEquals("com.desiredsoftware.nurseapp", appContext.getPackageName());
+    }
+
+    @Test
+    public void getCurrentTimeIntArr() {
+        Time myDeviceTime = new Time();
+
+        int[] currentTime = myDeviceTime.getCurrentTime();
+        assertNotEquals(new int[]{-1,-1,-1,}, currentTime);
     }
 }
