@@ -34,7 +34,7 @@ public class Schedule implements ISchedule {
 
     Schedule()
     {
-        initialNotificationsAmount = 4;
+        initialNotificationsAmount = 8;
         initialWakeUpTime = new Time (10,0,0);
 
         initialToSleepTime = new Time (0,0,0);
