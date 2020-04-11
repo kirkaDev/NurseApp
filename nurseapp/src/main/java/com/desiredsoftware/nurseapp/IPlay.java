@@ -2,9 +2,8 @@ package com.desiredsoftware.nurseapp;
 
 public interface IPlay {
 
-    void playSound();
+    void playSound(int repeatAmount);
 
     void stopSound();
 
-    void repeatSound (int repetitionsAmount);
 }

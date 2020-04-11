@@ -1,65 +1,62 @@
 package com.desiredsoftware.nurseapp;
 
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
-
-import java.io.IOException;
 
 // This class implements playing audio using sound pool class.
 // Files for playing will be take from assets folder.
 public class SoundPoolPlayer implements IPlay {
 
-    private Object currentSound;
-
-    private static String pathFolderForSounds = "audio";
-
-
     int repetitionsAmount;
 
-    private SoundPool sPool;
+    private SoundPool soundPool;
 
-    private int maxStreams = 10;
-    private int streamType = AudioManager.STREAM_ALARM;
+    private int maxStreams = 2;
+    private int streamType = AudioManager.STREAM_MUSIC;
     private int srcQuality = 0;
+
+    float curVolume;
+    float maxVolume;
+    float leftVolume;
+    float rightVolume;
+    float playbackRate = 1f;
+
+    int priority = 1;
+
+
+
+    int repeatAmount = 0;
+    int soundId = 1;
+    int streamId;
 
     AssetManager assetManager;
 
-    SoundPoolPlayer()
-    {
-        sPool = new SoundPool(maxStreams, streamType, srcQuality);
+    SoundPoolPlayer(Context content, AudioManager audioManager) {
+        soundPool = new SoundPool(maxStreams, streamType, srcQuality);
+
+        soundId = soundPool.load(content, R.raw.notify_sound, 1);
+
+        curVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        leftVolume = curVolume / maxVolume;
+        rightVolume = curVolume / maxVolume;
     }
 
-
-
-
     @Override
-    public void playSound() {
-
+    public void playSound(int repeatAmount)
+    {
+        setRepeatAmount(repeatAmount);
+        streamId = soundPool.play(soundId, leftVolume, rightVolume, priority, this.repeatAmount, playbackRate);
     }
 
     @Override
     public void stopSound() {
-
+        soundPool.stop(streamId);
     }
 
-
-    @Override
-    public void repeatSound(int repetitionsAmount) {
-        for (int i=0; i<repetitionsAmount; i++)
-        {
-            playSound();
-        }
+    public void setRepeatAmount(int repeatAmount) {
+        this.repeatAmount = repeatAmount;
     }
-
-    public Object getCurrentSound() {
-        return currentSound;
-    }
-
-    public void setCurrentSound(Object currentSound) {
-        this.currentSound = currentSound;
-    }
-
-    }
+}

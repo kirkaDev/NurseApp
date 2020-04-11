@@ -1,6 +1,8 @@
 package com.desiredsoftware.nurseapp;
 
 import android.content.Context;
+import android.media.AudioManager;
+
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -28,7 +30,25 @@ public class TimeClassInstrumentedTests {
     public void getCurrentTimeIntArr() {
         Time myDeviceTime = new Time();
 
-        int[] currentTime = myDeviceTime.getCurrentTime();
+        Time currentTime = myDeviceTime.getCurrentTime();
         assertNotEquals(new int[]{-1,-1,-1,}, currentTime);
     }
+
+    @Test
+    public void playSound() throws InterruptedException {
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+
+        int repeatAmount = 1;
+
+        IPlay spPlayer = new SoundPoolPlayer(appContext, (AudioManager) appContext.getSystemService(Context.AUDIO_SERVICE));
+
+        Thread.sleep(2000);
+
+        spPlayer.playSound(repeatAmount);
+
+        Thread.sleep(2000);
+
+        assertTrue(false);
+    }
+
 }
