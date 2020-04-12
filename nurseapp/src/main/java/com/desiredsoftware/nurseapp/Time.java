@@ -52,7 +52,7 @@ public class Time {
         return timeValue;
     }
 
-    static int getTimeValueOnSeconds(Time timeToConvert)
+    public static int getTimeValueOnSeconds(Time timeToConvert)
     {
         return timeToConvert.hoursNumber*3600 + timeToConvert.minutesNumber*60
                 + timeToConvert.secondsNumber;

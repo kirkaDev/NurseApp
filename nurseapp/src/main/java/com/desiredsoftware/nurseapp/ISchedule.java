@@ -8,6 +8,16 @@ public interface ISchedule {
 
     int GetCurrentNotificationsPerDay();
 
+    void SetToSleepTime(Time toSleepTime);
+
+    void SetWakeupTime(Time toSleepTime);
+
+    void SetNotificationsPerDay(int amount);
+
+    Time GetWakeupTime();
+
+    Time GetToSleepTime();
+
     ArrayList<Time> GetSchedule();
 
 }
