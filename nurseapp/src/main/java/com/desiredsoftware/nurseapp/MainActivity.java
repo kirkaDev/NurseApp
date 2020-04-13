@@ -52,7 +52,6 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
     final static String PREFERENCES_SOUND_REPEAT_AMOUNT = "sound_repeat";
     final static String PREFERENCES_NOTIFICATIONS_AMOUNT = "notifications_amount";
 
-
     TextView textViewTimePoints;
 
     Button btn_wakeUpTime;
@@ -62,36 +61,23 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
     EditText editText_soundRepeatAmount;
     EditText editText_timerPeriod;
 
-
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
 
         // TODO: Landcape layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         savedSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
 
-
         scheduleExmpl = new Schedule();
         scheduleArray =  scheduleExmpl.GetSchedule();
 
         timerArray = new ArrayList<Timer>();
 
-
-
         btn_wakeUpTime = findViewById(R.id.btn_wakeUpTime);
-        btn_wakeUpTime.setText(scheduleExmpl.GetWakeupTime().getTimeValue()[0] + ":" + scheduleExmpl.GetWakeupTime().getTimeValue()[1]);
-
         btn_toSleepTime = findViewById(R.id.btn_tpSleepTime);
-        btn_toSleepTime.setText(scheduleExmpl.GetToSleepTime().getTimeValue()[0] + ":" + scheduleExmpl.GetToSleepTime().getTimeValue()[1]);
-
         editText_notificationsAmount = findViewById(R.id.editText_notificationsAmount);
         editText_soundRepeatAmount = findViewById(R.id.editText_soundRepeatAmount);
         editText_timerPeriod = findViewById(R.id.editText_timerPeriod);
@@ -148,7 +134,6 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
         soundPoolPlayer = new SoundPoolPlayer(this, (AudioManager) getSystemService(Context.AUDIO_SERVICE));
 
         showSchedule();
-
     }
 
 
@@ -157,8 +142,6 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
         super.onPause();
         saveSharedPreferences();
     }
-
-
 
     @Override
     protected void onStop() {
@@ -192,7 +175,6 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
             switch (whatTimePickerWasPressed)
             {
-
                 case TIME_PICKER_WAKEUP:
                 {
                     String txtFromBtnSleepTime = btn_toSleepTime.getText().toString();
@@ -243,9 +225,22 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
     void loadSavedSettings()
     {
-
         editText_soundRepeatAmount.setText(String.valueOf(savedSettings.getInt(PREFERENCES_SOUND_REPEAT_AMOUNT,1)));
-        editText_notificationsAmount.setText(String.valueOf(savedSettings.getInt(PREFERENCES_NOTIFICATIONS_AMOUNT,3)));
+
+        int notificationsFromPreferences = savedSettings.getInt(PREFERENCES_NOTIFICATIONS_AMOUNT,8);
+
+        editText_notificationsAmount.setText(String.valueOf(notificationsFromPreferences));
+        scheduleExmpl.SetNotificationsPerDay(notificationsFromPreferences);
+
+        String getWakeup = savedSettings.getString(PREFERENCES_WAKEUP_TIME, "9:00");
+        String getToSleep = savedSettings.getString(PREFERENCES_TO_SLEEP_TIME, "22:00");
+
+        scheduleExmpl.SetWakeupTime(Time.fromStringToTime(getWakeup));
+        scheduleExmpl.SetToSleepTime(Time.fromStringToTime(getToSleep));
+
+        btn_wakeUpTime.setText(getWakeup);
+        btn_toSleepTime.setText(getToSleep);
+        refreshSchedule();
     }
 
     void showSchedule()
