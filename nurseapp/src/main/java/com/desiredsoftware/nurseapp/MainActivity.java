@@ -5,6 +5,7 @@ import androidx.fragment.app.DialogFragment;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -23,27 +24,46 @@ import java.util.ListIterator;
 
 public class  MainActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
 
-    IPlay soundPoolPlayer;
-    ISchedule scheduleExmpl;
-
-    ArrayList<Time> scheduleArray;
-
-    TextView textViewTimePoints;
-
-    Button btn_wakeUpTime;
-    Button btn_toSleepTime;
-    EditText editText_notificationsAmount;
-    EditText editText_soundRepeatAmount;
-
-    final static int SOUND_REPEAT_AMOUNT = 2;
-
-    final static  String LOG_TAG = "MainActivity class: ";
+    final static String LOG_TAG = "MainActivity class: ";
     final static String TAG_PICKER_WAKE_UP = "PickerWakeUp";
     final static String TAG_PICKER_TO_SLEEP = "PickerToSleep";
     final static String TIME_PICKER_WAKEUP = "WAKEUP";
     final static String TIME_PICKER_TO_SLEEP = "SLEEP";
 
+    private int soundRepeatAmount = 0;
+    private Time wakeUpTime;
+    private Time toSleepTime;
+
     private String whatTimePickerWasPressed;
+    private boolean isPlaying = false;
+
+    IPlay soundPoolPlayer;
+    ISchedule scheduleExmpl;
+
+    ArrayList<Time> scheduleArray;
+    ArrayList<Timer> timerArray;
+
+    SharedPreferences savedSettings;
+
+    final static String APP_PREFERENCES = "mysettings";
+
+    final static String PREFERENCES_WAKEUP_TIME = "wakeup";
+    final static String PREFERENCES_TO_SLEEP_TIME = "sleep";
+    final static String PREFERENCES_SOUND_REPEAT_AMOUNT = "sound_repeat";
+    final static String PREFERENCES_NOTIFICATIONS_AMOUNT = "notifications_amount";
+
+
+    TextView textViewTimePoints;
+
+    Button btn_wakeUpTime;
+    Button btn_toSleepTime;
+
+    EditText editText_notificationsAmount;
+    EditText editText_soundRepeatAmount;
+    EditText editText_timerPeriod;
+
+
+
 
 
     @Override
@@ -51,11 +71,20 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+
         // TODO: Landcape layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
+        savedSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
+
+
         scheduleExmpl = new Schedule();
         scheduleArray =  scheduleExmpl.GetSchedule();
+
+        timerArray = new ArrayList<Timer>();
+
+
 
         btn_wakeUpTime = findViewById(R.id.btn_wakeUpTime);
         btn_wakeUpTime.setText(scheduleExmpl.GetWakeupTime().getTimeValue()[0] + ":" + scheduleExmpl.GetWakeupTime().getTimeValue()[1]);
@@ -65,10 +94,11 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
         editText_notificationsAmount = findViewById(R.id.editText_notificationsAmount);
         editText_soundRepeatAmount = findViewById(R.id.editText_soundRepeatAmount);
+        editText_timerPeriod = findViewById(R.id.editText_timerPeriod);
+
         textViewTimePoints = findViewById(R.id.textViewTimePoints);
 
-        loadDefaultSettings();
-        // loadSavedSettings();
+        loadSavedSettings();
 
         editText_notificationsAmount.addTextChangedListener(new TextWatcher() {
             @Override
@@ -85,9 +115,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                 int notificationsFromEditText = 0;
 
                 if (!editable.toString().equals(""))
-                {
-                    notificationsFromEditText = Integer.valueOf(editable.toString()).intValue();
-                }
+                { notificationsFromEditText = Integer.valueOf(editable.toString()).intValue(); }
 
                 if (notificationsFromEditText >1) {
                     scheduleExmpl.SetNotificationsPerDay(notificationsFromEditText);
@@ -95,9 +123,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                     showSchedule();
                 }
                 else
-                {
-                    Log.d(LOG_TAG, "Пользователь ввел некорректное количество напоминаний: " + notificationsFromEditText);
-                }
+                { Log.d(LOG_TAG, "Пользователь ввел некорректное количество напоминаний: " + notificationsFromEditText); }
             }
         });
 
@@ -125,9 +151,38 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
     }
 
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveSharedPreferences();
+    }
+
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        saveSharedPreferences();
+    }
+
     public void onClickPlaySound(View v) {
-        soundPoolPlayer.playSound(Integer.parseInt(editText_soundRepeatAmount.getText().toString()));
-        //startService(new Intent(this, AwakeNurseService.class).putExtra("time", 2).putExtra("label","Call 1"));
+
+        int timePeriod = Integer.parseInt(editText_timerPeriod.getText().toString())*1000;
+        int soundRepeatAmount = Integer.parseInt(editText_soundRepeatAmount.getText().toString());
+
+        Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer, soundRepeatAmount);
+
+        if (!isPlaying) {
+            isPlaying = true;
+            timer.start();
+        }
+        else
+        {
+            isPlaying = true;
+            soundPoolPlayer.stopSound();
+            timer.cancel();
+        }
     }
 
     @Override
@@ -171,10 +226,26 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             showSchedule();
     }
 
-    void loadDefaultSettings()
+    void saveSharedPreferences()
     {
-        editText_notificationsAmount.setText(String.valueOf(scheduleExmpl.GetCurrentNotificationsPerDay()));
-        editText_soundRepeatAmount.setText(String.valueOf(SOUND_REPEAT_AMOUNT));
+        int soundRepeatAmount = Integer.parseInt(editText_soundRepeatAmount.getText().toString());
+        int notificationsAmount = Integer.parseInt(editText_notificationsAmount.getText().toString());
+        String wakeupTime = btn_wakeUpTime.getText().toString();
+        String toSleepTime = btn_toSleepTime.getText().toString();
+
+        SharedPreferences.Editor editor = savedSettings.edit();
+        editor.putInt(PREFERENCES_NOTIFICATIONS_AMOUNT, notificationsAmount);
+        editor.putInt(PREFERENCES_SOUND_REPEAT_AMOUNT, soundRepeatAmount);
+        editor.putString(PREFERENCES_WAKEUP_TIME, wakeupTime);
+        editor.putString(PREFERENCES_TO_SLEEP_TIME, toSleepTime);
+        editor.apply();
+    }
+
+    void loadSavedSettings()
+    {
+
+        editText_soundRepeatAmount.setText(String.valueOf(savedSettings.getInt(PREFERENCES_SOUND_REPEAT_AMOUNT,1)));
+        editText_notificationsAmount.setText(String.valueOf(savedSettings.getInt(PREFERENCES_NOTIFICATIONS_AMOUNT,3)));
     }
 
     void showSchedule()
@@ -184,6 +255,16 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
         textViewTimePoints.setText("");
 
         ListIterator<Time> listIterator = scheduleArray.listIterator();
+
+        for (Timer timer: timerArray)
+        {
+            timer.cancel();
+            timer = null;
+        }
+
+        timerArray = null;
+
+        timerArray = new ArrayList<Timer>();
 
         while (listIterator.hasNext())
         {
@@ -208,6 +289,15 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             int[] tPoints = tPoint.getTimeValue();
             if ((listIterator.nextIndex()-1)>= firstPointToShow)
             {
+                int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), tPoint))*1000;
+
+                String str = editText_soundRepeatAmount.getText().toString();
+                int soundRepeatAmount = Integer.parseInt(editText_soundRepeatAmount.getText().toString());
+
+                Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer, soundRepeatAmount);
+                timerArray.add(timer);
+                timer.start();
+
                 textViewTimePoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "\n\n");
                 willShow = true;
             }

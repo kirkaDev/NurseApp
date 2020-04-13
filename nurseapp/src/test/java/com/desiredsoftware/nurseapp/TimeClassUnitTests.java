@@ -154,5 +154,20 @@ public class TimeClassUnitTests {
             assertTrue(isVerified);
         }
     }
+
+    @Test
+    public void fromStringToTime()
+    {
+        String source = "9:01";
+
+        Time t = Time.fromStringToTime(source);
+
+        int hours = t.getTimeValue()[0];
+        int minutes = t.getTimeValue()[1];
+        int seconds = t.getTimeValue()[2];
+
+        assertTrue(hours==9 && minutes == 1 && seconds == 0);
+
+    }
 }
 

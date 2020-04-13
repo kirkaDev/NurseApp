@@ -25,13 +25,9 @@ public class SoundPoolPlayer implements IPlay {
 
     int priority = 1;
 
-
-
     int repeatAmount = 0;
     int soundId = 1;
     int streamId;
-
-    AssetManager assetManager;
 
     SoundPoolPlayer(Context content, AudioManager audioManager) {
         soundPool = new SoundPool(maxStreams, streamType, srcQuality);

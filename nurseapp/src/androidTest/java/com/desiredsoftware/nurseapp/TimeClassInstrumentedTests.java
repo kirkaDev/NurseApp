@@ -51,4 +51,18 @@ public class TimeClassInstrumentedTests {
         assertTrue(false);
     }
 
+    @Test
+    public void timerVerify() throws InterruptedException {
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        int repeatNumber = 1;
+        IPlay spPlayer = new SoundPoolPlayer(appContext, (AudioManager) appContext.getSystemService(Context.AUDIO_SERVICE));
+
+        Timer timer = new Timer(2000, 1000, spPlayer, repeatNumber);
+        timer.start();
+
+        Thread.sleep(8000);
+
+        assertTrue(false);
+    }
+
 }

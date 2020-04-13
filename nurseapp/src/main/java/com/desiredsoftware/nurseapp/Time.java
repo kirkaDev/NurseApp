@@ -103,6 +103,13 @@ public class Time {
         return getTimeOnHMS(additionResult);
     }
 
+    static public Time fromStringToTime (String strToTime)
+    {
+        String[] arrString = strToTime.split(":");
+        return new Time(Integer.parseInt(arrString[0]), Integer.parseInt(arrString[1]), 0);
+    }
+
+
     // Разделить временной интервал на одинаковые отрезки
     static ArrayList<Time> splitByTimePoints(int segmentsNumber, Time begin, Time end) throws IllegalArgumentException
     {
