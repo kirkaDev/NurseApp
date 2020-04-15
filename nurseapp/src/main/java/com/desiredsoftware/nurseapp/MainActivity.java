@@ -38,7 +38,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
     private boolean isPlaying = false;
 
     IPlay soundPoolPlayer;
-    ISchedule scheduleExmpl;
+    ISchedule schedule;
 
     ArrayList<Time> scheduleArray;
     ArrayList<Timer> timerArray;
@@ -53,13 +53,15 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
     final static String PREFERENCES_NOTIFICATIONS_AMOUNT = "notifications_amount";
 
     TextView textViewTimePoints;
+    TextView textViewNextNotificationsNPoints;
+    TextView txtView_nextNotificationNumber;
 
     Button btn_wakeUpTime;
     Button btn_toSleepTime;
 
     EditText editText_notificationsAmount;
     EditText editText_soundRepeatAmount;
-    EditText editText_timerPeriod;
+    EditText editText_showNextNotificationsNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,22 +71,22 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
         // TODO: Landcape layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        savedSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
-
-        scheduleExmpl = new Schedule();
-        scheduleArray =  scheduleExmpl.GetSchedule();
-
-        timerArray = new ArrayList<Timer>();
-
         btn_wakeUpTime = findViewById(R.id.btn_wakeUpTime);
         btn_toSleepTime = findViewById(R.id.btn_tpSleepTime);
         editText_notificationsAmount = findViewById(R.id.editText_notificationsAmount);
         editText_soundRepeatAmount = findViewById(R.id.editText_soundRepeatAmount);
-        editText_timerPeriod = findViewById(R.id.editText_timerPeriod);
-
+        editText_showNextNotificationsNumber = findViewById(R.id.editText_showNextNotificationsNumber);
         textViewTimePoints = findViewById(R.id.textViewTimePoints);
+        textViewNextNotificationsNPoints = findViewById(R.id.textViewNextNotificationsNPoints);
+        txtView_nextNotificationNumber = findViewById(R.id.txtView_nextNotificationNumber);
+
+        savedSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
 
         loadSavedSettings();
+
+        scheduleArray =  schedule.GetScheduleList();
+
+        timerArray = new ArrayList<Timer>();
 
         editText_notificationsAmount.addTextChangedListener(new TextWatcher() {
             @Override
@@ -104,14 +106,62 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                 { notificationsFromEditText = Integer.valueOf(editable.toString()).intValue(); }
 
                 if (notificationsFromEditText >1) {
-                    scheduleExmpl.SetNotificationsPerDay(notificationsFromEditText);
-                    refreshSchedule();
+                    schedule.SetNotificationsPerDay(notificationsFromEditText);
+                    scheduleArray = schedule.GetScheduleList();
                     showSchedule();
+                    showNextNumberNotifications();
                 }
                 else
                 { Log.d(LOG_TAG, "Пользователь ввел некорректное количество напоминаний: " + notificationsFromEditText); }
             }
         });
+
+        editText_soundRepeatAmount.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+                int soundRepeatFromEditText = 0;
+
+                if (!editable.toString().equals(""))
+                { soundRepeatFromEditText = Integer.valueOf(editable.toString()).intValue(); }
+
+                if (soundRepeatFromEditText >1) {
+                    soundRepeatAmount = soundRepeatFromEditText;
+                }
+            }
+        });
+
+        editText_showNextNotificationsNumber.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+                int notificationsNumberToShow = 0;
+
+                if (!editable.toString().equals(""))
+                { notificationsNumberToShow = Integer.valueOf(editable.toString()).intValue(); }
+
+                if (notificationsNumberToShow >1) {
+                    showNextNumberNotifications();
+                }
+            }
+        });
+
 
         btn_wakeUpTime.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -134,8 +184,11 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
         soundPoolPlayer = new SoundPoolPlayer(this, (AudioManager) getSystemService(Context.AUDIO_SERVICE));
 
         showSchedule();
-    }
 
+        showNextNumberNotifications();
+
+        //startService(new Intent(this, AwakeNurseService.class).putExtra("time", 2).putExtra("label","Call 1"));
+    }
 
     @Override
     protected void onPause() {
@@ -151,7 +204,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
     public void onClickPlaySound(View v) {
 
-        int timePeriod = Integer.parseInt(editText_timerPeriod.getText().toString())*1000;
+        int timePeriod = Integer.parseInt(editText_showNextNotificationsNumber.getText().toString())*1000;
         int soundRepeatAmount = Integer.parseInt(editText_soundRepeatAmount.getText().toString());
 
         Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer, soundRepeatAmount);
@@ -186,7 +239,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                         return;
                     }
                     btn_wakeUpTime.setText(strToSet);
-                    scheduleExmpl.SetWakeupTime(new Time(hours, minutes, 0));
+                    schedule.SetWakeupTime(new Time(hours, minutes, 0));
                     break;
                 }
 
@@ -194,18 +247,18 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                 {
                     if (btn_wakeUpTime.getText().toString().equals(strToSet))
                     {
-                        Toast.makeText(this,"Время подъема и отбоя не должно быть одинаковым, " +
-                                "введите, пожалуйста, выберете другок время", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this,"Время подъема и отбоя должно быть разным, " +
+                                "выберете, пожалуйста, другое время", Toast.LENGTH_LONG).show();
                         return;
                     }
-
                     btn_toSleepTime.setText(strToSet);
-                    scheduleExmpl.SetToSleepTime(new Time(hours, minutes, 0));
+                    schedule.SetToSleepTime(new Time(hours, minutes, 0));
                     break;
                 }
             }
-            refreshSchedule();
+            scheduleArray = schedule.GetScheduleList();
             showSchedule();
+            showNextNumberNotifications();
     }
 
     void saveSharedPreferences()
@@ -225,27 +278,21 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
     void loadSavedSettings()
     {
-        editText_soundRepeatAmount.setText(String.valueOf(savedSettings.getInt(PREFERENCES_SOUND_REPEAT_AMOUNT,1)));
+        int notifications = savedSettings.getInt(PREFERENCES_NOTIFICATIONS_AMOUNT,7);
+        this.soundRepeatAmount = savedSettings.getInt(PREFERENCES_SOUND_REPEAT_AMOUNT,1);
+        String toLoadWakeupTime = savedSettings.getString(PREFERENCES_WAKEUP_TIME, "9:00");
+        String toLoadSleepTime = savedSettings.getString(PREFERENCES_TO_SLEEP_TIME, "21:00");
 
-        int notificationsFromPreferences = savedSettings.getInt(PREFERENCES_NOTIFICATIONS_AMOUNT,8);
+        schedule = new Schedule(notifications, Time.fromStringToTime(toLoadWakeupTime), Time.fromStringToTime(toLoadSleepTime));
 
-        editText_notificationsAmount.setText(String.valueOf(notificationsFromPreferences));
-        scheduleExmpl.SetNotificationsPerDay(notificationsFromPreferences);
-
-        String getWakeup = savedSettings.getString(PREFERENCES_WAKEUP_TIME, "9:00");
-        String getToSleep = savedSettings.getString(PREFERENCES_TO_SLEEP_TIME, "22:00");
-
-        scheduleExmpl.SetWakeupTime(Time.fromStringToTime(getWakeup));
-        scheduleExmpl.SetToSleepTime(Time.fromStringToTime(getToSleep));
-
-        btn_wakeUpTime.setText(getWakeup);
-        btn_toSleepTime.setText(getToSleep);
-        refreshSchedule();
+        editText_notificationsAmount.setText(String.valueOf(notifications));
+        editText_soundRepeatAmount.setText(String.valueOf(this.soundRepeatAmount));
+        btn_wakeUpTime.setText(toLoadWakeupTime);
+        btn_toSleepTime.setText(toLoadSleepTime);
     }
 
     void showSchedule()
     {
-        int firstPointToShow = 0;
         boolean willShow = false;
         textViewTimePoints.setText("");
 
@@ -261,19 +308,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
         timerArray = new ArrayList<Timer>();
 
-        while (listIterator.hasNext())
-        {
-
-            if (Time.getTimeValueOnSeconds(Time.getCurrentTime()) > Time.getTimeValueOnSeconds(listIterator.next()))
-            {
-                firstPointToShow++;
-                continue;
-            }
-            else
-            {
-                break;
-            }
-        }
+        int firstPointToShow = schedule.GetFirstNotificationIndex(Time.getCurrentTime());
 
         listIterator = null;
         listIterator = scheduleArray.listIterator();
@@ -286,39 +321,50 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             {
                 int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), tPoint))*1000;
 
-                String str = editText_soundRepeatAmount.getText().toString();
+                //String str = editText_soundRepeatAmount.getText().toString();
                 int soundRepeatAmount = Integer.parseInt(editText_soundRepeatAmount.getText().toString());
 
                 Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer, soundRepeatAmount);
                 timerArray.add(timer);
                 timer.start();
 
-                textViewTimePoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "\n\n");
-                willShow = true;
+                textViewTimePoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "; ");
             }
         }
-
-        if (!willShow)
-        {
-            textViewTimePoints.append("Почему вы не спите?");
-        }
-
     }
 
-    void showScheduleInFull()
+    void showNextNumberNotifications()
+    {
+        int numberToShow = Integer.parseInt(editText_showNextNotificationsNumber.getText().toString());
+
+        txtView_nextNotificationNumber.setText("Следующие " + String.valueOf(numberToShow) + " уведомлен(-ия/-ия):");
+
+        ArrayList<Time> arrToShow = schedule.GetNextNotifactionsByNumber(numberToShow);
+        ListIterator<Time> listIterator = arrToShow.listIterator();
+
+        textViewNextNotificationsNPoints.setText("");
+
+        while (listIterator.hasNext())
+        {
+            Time tPoint = listIterator.next();
+            int[] tPoints = tPoint.getTimeValue();
+            textViewNextNotificationsNPoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "; ");
+            }
+    }
+
+
+
+
+    // For debug
+/*    void showScheduleInFull()
     {
         for (Time tPoint: scheduleArray)
         {
             int[] tPoints = tPoint.getTimeValue();
 
             if (Time.getTimeValueOnSeconds(Time.getCurrentTime())< Time.getTimeValueOnSeconds(tPoint)) {
-                textViewTimePoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "\n\n");
+                textViewTimePoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "; ");
             }
         }
-    }
-
-    void refreshSchedule()
-    {
-        scheduleArray = scheduleExmpl.GetSchedule();
-    }
+    }*/
 }

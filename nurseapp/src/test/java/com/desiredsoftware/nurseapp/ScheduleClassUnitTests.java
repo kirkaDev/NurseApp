@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.ListIterator;
 
 import static org.junit.Assert.assertTrue;
@@ -13,10 +12,10 @@ public class ScheduleClassUnitTests {
     @Test
     public void GetInitialSchedule()
     {
-        ISchedule defaultSchedule = new Schedule();
+        ISchedule defaultSchedule = new Schedule(4, new Time (10,0,0), new Time (0,0,0));
 
         // Значения формируются из начальных условий, указываемых в конструкторе класса Schedule
-        ArrayList<Time> defaultsPoints = defaultSchedule.GetSchedule();
+        ArrayList<Time> defaultsPoints = defaultSchedule.GetScheduleList();
 
         int count=0;
         boolean isVerified = false;
@@ -42,34 +41,75 @@ public class ScheduleClassUnitTests {
             }
         }
         assertTrue(isVerified);
-
     }
 
     @Test
-    public void TestRefreshSchedule()
+    public void TestFirstPointIndex1()
     {
-        int nextPointPosition=0;
-        ISchedule scheduleExample = new Schedule();
+        ISchedule schedule = new Schedule(5, new Time(8,0,0), new Time(01,0,0));
 
-        ArrayList<Time> schedule = scheduleExample.GetSchedule();
+        ArrayList<Time> scheduleList = schedule.GetScheduleList();
 
-        Time deviceTime = new Time (15,0,0);
+        Time deviceTime = new Time (7,01,20);
 
-        ListIterator<Time> listIterator = schedule.listIterator();
+        int firstPointIndex = schedule.GetFirstNotificationIndex(deviceTime);
 
-        while (listIterator.hasNext())
-        {
-            nextPointPosition++;
-            if (Time.getTimeValueOnSeconds(deviceTime) > Time.getTimeValueOnSeconds(listIterator.next()))
-            {
-                continue;
-            }
-            else
-            {
-                break;
-            }
-        }
+        assertTrue(firstPointIndex==0);
+    }
 
-        assertTrue(nextPointPosition==3);
+    @Test
+    public void TestFirstPointIndex2()
+    {
+        ISchedule schedule = new Schedule(5, new Time(8,30,4), new Time(22,5,7));
+
+        ArrayList<Time> scheduleList = schedule.GetScheduleList();
+
+        Time deviceTime = new Time (7,01,20);
+
+        int firstPointIndex = schedule.GetFirstNotificationIndex(deviceTime);
+
+        assertTrue(firstPointIndex==0);
+    }
+
+    @Test
+    public void TestFirstPointIndex3()
+    {
+        ISchedule schedule = new Schedule(10, new Time(8,30,4), new Time(23,5,7));
+
+        ArrayList<Time> scheduleList = schedule.GetScheduleList();
+
+        Time deviceTime = new Time (11,02,43);
+
+        int firstPointIndex = schedule.GetFirstNotificationIndex(deviceTime);
+
+        assertTrue(firstPointIndex==2);
+    }
+
+    @Test
+    public void TestFirstPointIndex4()
+    {
+        ISchedule schedule = new Schedule(10, new Time(8,30,4), new Time(23,5,7));
+
+        ArrayList<Time> scheduleList = schedule.GetScheduleList();
+
+        Time deviceTime = new Time (23,15,43);
+
+        int firstPointIndex = schedule.GetFirstNotificationIndex(deviceTime);
+
+        assertTrue(firstPointIndex==0);
+    }
+
+    @Test
+    public void TestFirstPointIndex5()
+    {
+        ISchedule schedule = new Schedule(6, new Time(8,30,4), new Time(04,5,7));
+
+        ArrayList<Time> scheduleList = schedule.GetScheduleList();
+
+        Time deviceTime = new Time (23,15,43);
+
+        int firstPointIndex = schedule.GetFirstNotificationIndex(deviceTime);
+
+        assertTrue(firstPointIndex==4);
     }
 }

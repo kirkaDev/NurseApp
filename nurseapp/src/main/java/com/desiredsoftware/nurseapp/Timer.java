@@ -20,7 +20,6 @@ public class Timer extends CountDownTimer {
 
     @Override
     public void onFinish() {
-
         spPlayer.stopSound();
         spPlayer.playSound(repeatNumber);
 

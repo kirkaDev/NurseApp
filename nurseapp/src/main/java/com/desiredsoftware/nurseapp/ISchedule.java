@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 public interface ISchedule {
 
-    Time GetNextNotifaction();
+    Time GetNextNotifaction(int startIndex);
 
-    int GetCurrentNotificationsPerDay();
+    ArrayList<Time> GetNextNotifactionsByNumber(int number);
 
     void SetToSleepTime(Time toSleepTime);
 
@@ -18,6 +18,8 @@ public interface ISchedule {
 
     Time GetToSleepTime();
 
-    ArrayList<Time> GetSchedule();
+    ArrayList<Time> GetScheduleList();
+
+    int GetFirstNotificationIndex(Time deviceTime);
 
 }
