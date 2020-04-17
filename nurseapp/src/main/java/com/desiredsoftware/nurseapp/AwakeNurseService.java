@@ -10,10 +10,9 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
-import java.util.ListIterator;
 import java.util.concurrent.TimeUnit;
 
-public class AwakeNurseService extends IntentService {
+public class AwakeNurseService extends IntentService implements Timer.CountDownIsOver{
     public AwakeNurseService() {
         super("My awake nurse service");
     }
@@ -24,7 +23,8 @@ public class AwakeNurseService extends IntentService {
     ISchedule schedule;
 
     ArrayList<Time> scheduleArray;
-    ArrayList<Timer> timerArray;
+
+    Timer currentTimer;
 
     SharedPreferences savedSettings;
 
@@ -41,16 +41,11 @@ public class AwakeNurseService extends IntentService {
         Log.d(My_TAG, "onCreate");
 
         savedSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
-
         loadSavedSettings();
 
         scheduleArray =  schedule.GetScheduleList();
-
-        timerArray = new ArrayList<Timer>();
-
         runSchedule();
-        showSchedule();
-    }
+    };
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
@@ -73,14 +68,6 @@ public class AwakeNurseService extends IntentService {
         Log.d(My_TAG, "onDestroy");
     }
 
-    public void PlaySound() {
-
-        int timePeriod = 10000;
-        int soundRepeatAmount = 2;
-
-        Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer);
-        timer.start();
-        }
 
     void loadSavedSettings()
     {
@@ -93,89 +80,35 @@ public class AwakeNurseService extends IntentService {
         schedule = new Schedule(notifications, Time.fromStringToTime(toLoadWakeupTime), Time.fromStringToTime(toLoadSleepTime));
     }
 
-    void showSchedule()
-    {
-        int firstPointToShow = 0;
-        boolean willShow = false;
-
-        ListIterator<Time> listIterator = scheduleArray.listIterator();
-
-        for (Timer timer: timerArray)
-        {
-            timer.cancel();
-            timer = null;
-        }
-
-        timerArray = null;
-
-        timerArray = new ArrayList<Timer>();
-
-        while (listIterator.hasNext())
-        {
-
-            if (Time.getTimeValueOnSeconds(Time.getCurrentTime()) > Time.getTimeValueOnSeconds(listIterator.next()))
-            {
-                firstPointToShow++;
-                continue;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        listIterator = null;
-        listIterator = scheduleArray.listIterator();
-
-        while (listIterator.hasNext())
-        {
-            Time tPoint = listIterator.next();
-            int[] tPoints = tPoint.getTimeValue();
-            if ((listIterator.nextIndex()-1)>= firstPointToShow)
-            {
-                int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), tPoint))*1000;
-
-                Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer);
-                timerArray.add(timer);
-                timer.start();
-
-//                textViewTimePoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "\n\n");
-                willShow = true;
-            }
-        }
-
-        if (!willShow)
-        {
-//            textViewTimePoints.append("Почему вы не спите?");
-        }
-
-    }
-
-    void showScheduleInFull()
-    {
-        for (Time tPoint: scheduleArray)
-        {
-            int[] tPoints = tPoint.getTimeValue();
-
-            if (Time.getTimeValueOnSeconds(Time.getCurrentTime())< Time.getTimeValueOnSeconds(tPoint)) {
-//                textViewTimePoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "\n\n");
-            }
-        }
-    }
-
-    void refreshSchedule()
-    {
-        scheduleArray = schedule.GetScheduleList();
-    }
 
     void runSchedule()
     {
-        int index = schedule.GetFirstNotificationIndex(Time.getCurrentTime());
+        if (currentTimer!=null)
+            currentTimer.cancel();
 
-        int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), scheduleArray.get(index)))*1000;
+        int currentPosition= schedule.GetFirstNotificationIndex(Time.getCurrentTime());
 
-        Timer timer = new Timer(timePeriod, 1000, soundPoolPlayer);
-        timerArray.add(timer);
-        timer.start();
+        Time firstNotification = scheduleArray.get(currentPosition);
+        int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), firstNotification))*1000;
+
+        this.currentTimer = new Timer(timePeriod, timePeriod / 1000, this.soundPoolPlayer);
+        currentTimer.registerCallBack(this);
+        currentTimer.start();
     }
+
+    void setNextNotification()
+    {
+        Time nextNotification = schedule.GetNextNotifaction();
+        int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), nextNotification))*1000;
+
+        this.currentTimer = new Timer(timePeriod, timePeriod / 1000, this.soundPoolPlayer);
+        this.currentTimer.registerCallBack(this);
+        this.currentTimer.start();
+    }
+
+    @Override
+    public void TimerCallback() {
+        setNextNotification();
+    }
+
 }

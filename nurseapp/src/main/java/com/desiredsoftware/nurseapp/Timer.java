@@ -8,7 +8,7 @@ public class Timer extends CountDownTimer {
     IPlay spPlayer;
 
     interface CountDownIsOver {
-        void TimerСallback();
+        void TimerCallback();
     }
 
     CountDownIsOver countDownIsOver;
@@ -33,7 +33,7 @@ public class Timer extends CountDownTimer {
 
     @Override
     public void onFinish() {
-        countDownIsOver.TimerСallback();
+        countDownIsOver.TimerCallback();
         spPlayer.StopSound();
         spPlayer.PlaySound();
 

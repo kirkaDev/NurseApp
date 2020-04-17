@@ -30,12 +30,8 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
     final static String TIME_PICKER_WAKEUP = "WAKEUP";
     final static String TIME_PICKER_TO_SLEEP = "SLEEP";
 
-    //private int soundRepeatAmount = 0;
-    private Time wakeUpTime;
-    private Time toSleepTime;
 
     private String whatTimePickerWasPressed;
-    private boolean isPlaying = false;
 
     IPlay soundPoolPlayer;
     ISchedule schedule;
@@ -102,7 +98,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                 int notificationsFromEditText = 0;
 
                 if (!editable.toString().equals(""))
-                { notificationsFromEditText = Integer.valueOf(editable.toString()).intValue(); }
+                { notificationsFromEditText = Integer.valueOf(editable.toString()); }
 
                 if (notificationsFromEditText >1) {
                     schedule.SetNotificationsPerDay(notificationsFromEditText);
@@ -128,10 +124,10 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             @Override
             public void afterTextChanged(Editable editable) {
 
-                int soundRepeatFromEditText = 0;
+                int soundRepeatFromEditText;
 
                 if (!editable.toString().equals(""))
-                { soundRepeatFromEditText = Integer.valueOf(editable.toString()).intValue();
+                { soundRepeatFromEditText = Integer.valueOf(editable.toString());
                     soundPoolPlayer.SetRepeatAmount(soundRepeatFromEditText);
                 }
             }
@@ -152,7 +148,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                 int notificationsNumberToShow = 0;
 
                 if (!editable.toString().equals(""))
-                { notificationsNumberToShow = Integer.valueOf(editable.toString()).intValue(); }
+                { notificationsNumberToShow = Integer.valueOf(editable.toString()); }
 
                 if (notificationsNumberToShow >1) {
                     showNextNumberNotifications();
@@ -297,7 +293,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
     {
         int numberToShow = Integer.parseInt(editText_showNextNotificationsNumber.getText().toString());
 
-        txtView_nextNotificationNumber.setText("Следующие " + String.valueOf(numberToShow) + " напоминаний(-я):");
+        txtView_nextNotificationNumber.setText("Следующие " + numberToShow + " напоминаний(-я):");
 
         ArrayList<Time> arrToShow = schedule.GetNextNotifactions(numberToShow);
         ListIterator<Time> listIterator = arrToShow.listIterator();
@@ -340,7 +336,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
     }
 
     @Override
-    public void TimerСallback() {
+    public void TimerCallback() {
         setNextNotification();
     }
 }
