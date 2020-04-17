@@ -4,9 +4,10 @@ import java.util.ArrayList;
 
 public interface ISchedule {
 
-    Time GetNextNotifaction(int startIndex);
 
-    ArrayList<Time> GetNextNotifactionsByNumber(int number);
+    ArrayList<Time> GetNextNotifactions(int number);
+
+    Time GetNextNotifaction();
 
     void SetToSleepTime(Time toSleepTime);
 

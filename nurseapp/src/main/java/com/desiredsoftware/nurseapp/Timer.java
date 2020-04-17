@@ -1,16 +1,26 @@
 package com.desiredsoftware.nurseapp;
 
-import android.content.Context;
 import android.os.CountDownTimer;
-import android.util.Log;
-
-import androidx.annotation.WorkerThread;
-import androidx.work.Worker;
 
 public class Timer extends CountDownTimer {
 
     static final String LOG_TAG = "Timer: ";
     IPlay spPlayer;
+
+    interface CountDownIsOver {
+        void TimerСallback();
+    }
+
+    CountDownIsOver countDownIsOver;
+
+    void registerCallBack(CountDownIsOver callback){
+        this.countDownIsOver = callback;
+    }
+
+    void doSomething(){
+//  countDownIsOver.TimerСallback();
+    }
+
 
     public Timer(long millisInFuture, long countDownInterval, IPlay spPlayer) {
         super(millisInFuture, countDownInterval);
@@ -23,8 +33,10 @@ public class Timer extends CountDownTimer {
 
     @Override
     public void onFinish() {
+        countDownIsOver.TimerСallback();
         spPlayer.StopSound();
         spPlayer.PlaySound();
+
     }
 
 

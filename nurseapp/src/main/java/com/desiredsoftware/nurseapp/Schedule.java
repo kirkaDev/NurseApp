@@ -42,6 +42,8 @@ public class Schedule implements ISchedule {
         int wakeupTimeOnSec = Time.getTimeValueOnSeconds(this.wakeupTime);
         int toSleepTimeOnSec = Time.getTimeValueOnSeconds(this.toSleepTime);
 
+        int firstNotificationsIndex=0;
+
         // (1) Когда все точки за день пройдены и человек должен по идее спать,
         // первая точка в его расписании будет с подъемом
         // (8:00 - 01:00; deviceTime = 7:00)
@@ -61,7 +63,6 @@ public class Schedule implements ISchedule {
         (8:00 - 22:00; deviceTime = 10:00)*/
         if (devTimeOnSec > wakeupTimeOnSec && devTimeOnSec < toSleepTimeOnSec)
         {
-            int firstNotificationsIndex=0;
             ListIterator<Time> listIterator = scheduleList.listIterator();
 
             while (listIterator.hasNext())
@@ -90,8 +91,6 @@ public class Schedule implements ISchedule {
         // (5) (8:00 - 03:00; deviceTime = 23:00)
         if ((devTimeOnSec > wakeupTimeOnSec) && (devTimeOnSec > toSleepTimeOnSec) && (wakeupTimeOnSec>toSleepTimeOnSec))
         {
-            int firstNotificationsIndex=0;
-
             /*Данный массив будет содержать все те же временные точки, что и коллекция экземпляра класса Schedule,
             только точки, переходящие на следующий день будут выглядеть с прибавлением 24 часов (86400 сек)
             (например, точка 01:00 будет представлена, как 25:00 ) - для дальнейшего сравнения с временной
@@ -165,13 +164,7 @@ public class Schedule implements ISchedule {
     }
 
     @Override
-    public Time GetNextNotifaction(int startIndex) {
-        // TODO: to implement
-        return null;
-    }
-
-    @Override
-    public ArrayList<Time> GetNextNotifactionsByNumber(int number)
+    public ArrayList<Time> GetNextNotifactions(int number)
     {
         ArrayList<Time> arrNextNotifications = new ArrayList<>();
         int currentIndex = GetFirstNotificationIndex(Time.getCurrentTime());
@@ -187,11 +180,24 @@ public class Schedule implements ISchedule {
             else {
                 currentIndex = 0;
                 arrNextNotifications.add(scheduleList.get(currentIndex));
-                //currentIndex++;
             }
         }
 
         return arrNextNotifications;
+    }
+
+    @Override
+    public Time GetNextNotifaction()
+    {
+        int currentIndex = GetFirstNotificationIndex(Time.getCurrentTime());
+
+        if (currentIndex+1<=scheduleList.size()-1) {
+            return scheduleList.get(currentIndex + 1);
+        }
+        else {
+            currentIndex = 0;
+            return scheduleList.get(0);
+        }
     }
 }
 

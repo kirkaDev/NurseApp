@@ -22,7 +22,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
-public class  MainActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
+public class  MainActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener, Timer.CountDownIsOver {
 
     final static String LOG_TAG = "MainActivity class: ";
     final static String TAG_PICKER_WAKE_UP = "PickerWakeUp";
@@ -41,7 +41,8 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
     ISchedule schedule;
 
     ArrayList<Time> scheduleArray;
-    ArrayList<Timer> timerArray;
+
+    Timer currentTimer;
 
     SharedPreferences savedSettings;
 
@@ -86,8 +87,6 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
         scheduleArray =  schedule.GetScheduleList();
 
-        //timerArray = new ArrayList<Timer>();
-
         editText_notificationsAmount.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -108,6 +107,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                 if (notificationsFromEditText >1) {
                     schedule.SetNotificationsPerDay(notificationsFromEditText);
                     scheduleArray = schedule.GetScheduleList();
+                    runSchedule();
                     showSchedule();
                     showNextNumberNotifications();
                 }
@@ -179,10 +179,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             }
         });
 
-
-
         showSchedule();
-
         showNextNumberNotifications();
 
         runSchedule();
@@ -201,26 +198,6 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
         super.onStop();
         saveSharedPreferences();
     }
-
-        //for debug only
-/*      public void onClickPlaySound(View v) {
-
-        int timePeriod = Integer.parseInt(editText_showNextNotificationsNumber.getText().toString())*1000;
-        int soundRepeatAmount = Integer.parseInt(editText_soundRepeatAmount.getText().toString());
-
-        Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer, soundRepeatAmount);
-
-        if (!isPlaying) {
-            isPlaying = true;
-            timer.start();
-        }
-        else
-        {
-            isPlaying = true;
-            soundPoolPlayer.stopSound();
-            timer.cancel();
-        }
-    }*/
 
     @Override
     public void onTimeSet(TimePicker timePicker, int hours, int minutes) {
@@ -258,6 +235,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                 }
             }
             scheduleArray = schedule.GetScheduleList();
+            runSchedule();
             showSchedule();
             showNextNumberNotifications();
     }
@@ -300,20 +278,9 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
         ListIterator<Time> listIterator = scheduleArray.listIterator();
 
-        /*for (Timer timer: timerArray)
-        {
-            timer.cancel();
-            timer = null;
-        }
-
-        timerArray = null;
-
-        timerArray = new ArrayList<Timer>();*/
-
+        listIterator = scheduleArray.listIterator();
         int firstPointToShow = schedule.GetFirstNotificationIndex(Time.getCurrentTime());
 
-        listIterator = null;
-        listIterator = scheduleArray.listIterator();
 
         while (listIterator.hasNext())
         {
@@ -321,11 +288,6 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             int[] tPoints = tPoint.getTimeValue();
             if ((listIterator.nextIndex()-1)>= firstPointToShow)
             {
-               /* int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), tPoint))*1000;
-
-                Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer);
-                timerArray.add(timer);
-                timer.start();*/
                 textViewTimePoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "; ");
             }
         }
@@ -337,7 +299,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
         txtView_nextNotificationNumber.setText("Следующие " + String.valueOf(numberToShow) + " напоминаний(-я):");
 
-        ArrayList<Time> arrToShow = schedule.GetNextNotifactionsByNumber(numberToShow);
+        ArrayList<Time> arrToShow = schedule.GetNextNotifactions(numberToShow);
         ListIterator<Time> listIterator = arrToShow.listIterator();
 
         textViewNextNotificationsNPoints.setText("");
@@ -352,16 +314,33 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
     void runSchedule()
     {
-        ListIterator<Time> listIterator = scheduleArray.listIterator();
+        if (currentTimer!=null)
+        currentTimer.cancel();
 
         int currentPosition= schedule.GetFirstNotificationIndex(Time.getCurrentTime());
 
         Time firstNotification = scheduleArray.get(currentPosition);
         int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), firstNotification))*1000;
-        Timer timer = new Timer(timePeriod, timePeriod / 1000, this.soundPoolPlayer);
-        timer.start();
 
+        this.currentTimer = new Timer(timePeriod, timePeriod / 1000, this.soundPoolPlayer);
+        currentTimer.registerCallBack(this);
+        currentTimer.start();
+    }
 
+    void setNextNotification()
+    {
+        /*showSchedule();
+        showNextNumberNotifications();*/
+        Time nextNotification = schedule.GetNextNotifaction();
+        int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), nextNotification))*1000;
 
+        this.currentTimer = new Timer(timePeriod, timePeriod / 1000, this.soundPoolPlayer);
+        this.currentTimer.registerCallBack(this);
+        this.currentTimer.start();
+    }
+
+    @Override
+    public void TimerСallback() {
+        setNextNotification();
     }
 }
