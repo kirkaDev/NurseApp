@@ -29,7 +29,7 @@ public class SoundPoolPlayer implements IPlay {
     int soundId = 1;
     int streamId;
 
-    SoundPoolPlayer(Context content, AudioManager audioManager) {
+    SoundPoolPlayer(Context content, AudioManager audioManager, int repeatAmount) {
         soundPool = new SoundPool(maxStreams, streamType, srcQuality);
 
         soundId = soundPool.load(content, R.raw.notify_sound, 1);
@@ -38,21 +38,28 @@ public class SoundPoolPlayer implements IPlay {
         maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         leftVolume = curVolume / maxVolume;
         rightVolume = curVolume / maxVolume;
+        this.repeatAmount = repeatAmount;
+
     }
 
     @Override
-    public void playSound(int repeatAmount)
+    public void PlaySound()
     {
-        setRepeatAmount(repeatAmount);
         streamId = soundPool.play(soundId, leftVolume, rightVolume, priority, this.repeatAmount, playbackRate);
     }
 
     @Override
-    public void stopSound() {
+    public void StopSound() {
         soundPool.stop(streamId);
     }
 
-    public void setRepeatAmount(int repeatAmount) {
+    @Override
+    public void SetRepeatAmount(int repeatAmount) {
         this.repeatAmount = repeatAmount;
+    }
+
+    @Override
+    public int GetRepeatAmount() {
+        return this.repeatAmount;
     }
 }

@@ -20,8 +20,6 @@ public class AwakeNurseService extends IntentService {
 
     String My_TAG = "AwakeNurseService ";
 
-    private int soundRepeatAmount = 0;
-
     IPlay soundPoolPlayer;
     ISchedule schedule;
 
@@ -50,10 +48,7 @@ public class AwakeNurseService extends IntentService {
 
         timerArray = new ArrayList<Timer>();
 
-        soundPoolPlayer = new SoundPoolPlayer(this, (AudioManager) getSystemService(Context.AUDIO_SERVICE));
-
         runSchedule();
-
         showSchedule();
     }
 
@@ -78,23 +73,23 @@ public class AwakeNurseService extends IntentService {
         Log.d(My_TAG, "onDestroy");
     }
 
-
     public void PlaySound() {
 
         int timePeriod = 10000;
         int soundRepeatAmount = 2;
 
-        Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer, soundRepeatAmount);
+        Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer);
         timer.start();
         }
 
     void loadSavedSettings()
     {
         int notifications = savedSettings.getInt(PREFERENCES_NOTIFICATIONS_AMOUNT,8);
-        this.soundRepeatAmount = savedSettings.getInt(PREFERENCES_SOUND_REPEAT_AMOUNT,1);
+        int soundRepeatAmount = savedSettings.getInt(PREFERENCES_SOUND_REPEAT_AMOUNT,1);
         String toLoadWakeupTime = savedSettings.getString(PREFERENCES_WAKEUP_TIME, "9:00");
         String toLoadSleepTime = savedSettings.getString(PREFERENCES_TO_SLEEP_TIME, "22:00");
 
+        soundPoolPlayer = new SoundPoolPlayer(this, (AudioManager) getSystemService(Context.AUDIO_SERVICE), soundRepeatAmount);
         schedule = new Schedule(notifications, Time.fromStringToTime(toLoadWakeupTime), Time.fromStringToTime(toLoadSleepTime));
     }
 
@@ -140,7 +135,7 @@ public class AwakeNurseService extends IntentService {
             {
                 int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), tPoint))*1000;
 
-                Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer, soundRepeatAmount);
+                Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer);
                 timerArray.add(timer);
                 timer.start();
 
@@ -179,16 +174,8 @@ public class AwakeNurseService extends IntentService {
 
         int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), scheduleArray.get(index)))*1000;
 
-        Timer timer = new Timer(timePeriod, timePeriod / 1000, soundPoolPlayer, soundRepeatAmount);
+        Timer timer = new Timer(timePeriod, 1000, soundPoolPlayer);
         timerArray.add(timer);
         timer.start();
-
-
-
-/*        isTimeEstimated()
-        {
-            getNextPoint();
-        }*/
-
     }
 }

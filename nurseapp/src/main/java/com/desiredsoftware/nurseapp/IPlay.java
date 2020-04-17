@@ -2,8 +2,12 @@ package com.desiredsoftware.nurseapp;
 
 public interface IPlay {
 
-    void playSound(int repeatAmount);
+    void PlaySound();
 
-    void stopSound();
+    void StopSound();
+
+    void SetRepeatAmount(int repeatAmount);
+
+    int GetRepeatAmount();
 
 }

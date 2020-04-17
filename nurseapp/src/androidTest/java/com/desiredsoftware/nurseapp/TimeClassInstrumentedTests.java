@@ -40,11 +40,11 @@ public class TimeClassInstrumentedTests {
 
         int repeatAmount = 1;
 
-        IPlay spPlayer = new SoundPoolPlayer(appContext, (AudioManager) appContext.getSystemService(Context.AUDIO_SERVICE));
+        IPlay spPlayer = new SoundPoolPlayer(appContext, (AudioManager) appContext.getSystemService(Context.AUDIO_SERVICE), repeatAmount);
 
         Thread.sleep(2000);
 
-        spPlayer.playSound(repeatAmount);
+        spPlayer.PlaySound();
 
         Thread.sleep(2000);
 
@@ -55,9 +55,9 @@ public class TimeClassInstrumentedTests {
     public void timerVerify() throws InterruptedException {
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         int repeatNumber = 1;
-        IPlay spPlayer = new SoundPoolPlayer(appContext, (AudioManager) appContext.getSystemService(Context.AUDIO_SERVICE));
+        IPlay spPlayer = new SoundPoolPlayer(appContext, (AudioManager) appContext.getSystemService(Context.AUDIO_SERVICE), repeatNumber);
 
-        Timer timer = new Timer(2000, 1000, spPlayer, repeatNumber);
+        Timer timer = new Timer(2000, 1000, spPlayer);
         timer.start();
 
         Thread.sleep(8000);

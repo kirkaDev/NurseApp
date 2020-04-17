@@ -1,17 +1,20 @@
 package com.desiredsoftware.nurseapp;
 
+import android.content.Context;
 import android.os.CountDownTimer;
 import android.util.Log;
 
+import androidx.annotation.WorkerThread;
+import androidx.work.Worker;
+
 public class Timer extends CountDownTimer {
 
+    static final String LOG_TAG = "Timer: ";
     IPlay spPlayer;
-    int repeatNumber;
 
-    public Timer(long millisInFuture, long countDownInterval, IPlay spPlayer, int repeatNumber) {
+    public Timer(long millisInFuture, long countDownInterval, IPlay spPlayer) {
         super(millisInFuture, countDownInterval);
         this.spPlayer = spPlayer;
-        this.repeatNumber = repeatNumber;
     }
 
     @Override
@@ -20,8 +23,9 @@ public class Timer extends CountDownTimer {
 
     @Override
     public void onFinish() {
-        spPlayer.stopSound();
-        spPlayer.playSound(repeatNumber);
-
+        spPlayer.StopSound();
+        spPlayer.PlaySound();
     }
+
+
 }
