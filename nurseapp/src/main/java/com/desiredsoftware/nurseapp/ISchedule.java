@@ -15,6 +15,8 @@ public interface ISchedule {
 
     void SetNotificationsPerDay(int amount);
 
+    int GetNotificationsPerDay();
+
     Time GetWakeupTime();
 
     Time GetToSleepTime();

@@ -1,14 +1,14 @@
 package com.desiredsoftware.nurseapp;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
+import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
-import android.os.IBinder;
-import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -17,9 +17,12 @@ import androidx.core.app.NotificationCompat;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-public class AwakeNurseService extends Service implements Timer.CountDownIsOver {
+public class AwakeNurseIntentService extends IntentService implements Timer.CountDownIsOver{
+    public AwakeNurseIntentService() {
+        super("AwakeNurseIntentService");
+    }
 
-    String My_TAG = "AwakeNurseService ";
+    String My_TAG = "AwakeNurseIntentService ";
 
     IPlay soundPoolPlayer;
     ISchedule schedule;
@@ -37,7 +40,6 @@ public class AwakeNurseService extends Service implements Timer.CountDownIsOver 
     final static String PREFERENCES_SOUND_REPEAT_AMOUNT = "sound_repeat";
     final static String PREFERENCES_NOTIFICATIONS_AMOUNT = "notifications_amount";
 
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -46,32 +48,64 @@ public class AwakeNurseService extends Service implements Timer.CountDownIsOver 
 
         savedSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
         loadSavedSettings();
-        scheduleArray =  schedule.GetScheduleList();
 
+        scheduleArray =  schedule.GetScheduleList();
         runSchedule();
     }
 
+    // Сервис не остановится самовольно
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         //return super.onStartCommand(intent, flags, startId);
+
+       // runSchedule();
 
         int[] newWakeupTime = intent.getIntArrayExtra("wakeupTime");
         int[] newToSleepTime = intent.getIntArrayExtra("toSleepTime");
         int notificationsAmount = intent.getIntExtra("notificationsAmount", 8);
         int soundRepeatAmount = intent.getIntExtra("soundRepeatAmount", 1);
 
-        if (newWakeupTime!=null && newToSleepTime!=null)
+        if (startId!=1)
         {
             schedule.SetWakeupTime(new Time(newWakeupTime));
             schedule.SetToSleepTime(new Time(newToSleepTime));
             schedule.SetNotificationsPerDay(notificationsAmount);
             soundPoolPlayer = new SoundPoolPlayer(this, (AudioManager) getSystemService(Context.AUDIO_SERVICE), soundRepeatAmount);
             this.scheduleArray = schedule.GetScheduleList();
-
             runSchedule();
         }
 
         return START_STICKY;
+    }
+
+    @Override
+    protected void onHandleIntent(@Nullable Intent intent) {
+
+
+        int tm = intent.getIntExtra("time", 0);
+        String label = intent.getStringExtra("label");
+        Log.d(My_TAG, "onHandleIntent start " + label);
+        try {
+            TimeUnit.SECONDS.sleep(tm);
+        } catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        Log.d (My_TAG, "onHandleIntent end " + label);
+
+        runSchedule();
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(My_TAG, "onDestroy");
+    }
+
+    @Override
+    public ComponentName startForegroundService(Intent service) {
+        return super.startForegroundService(service);
     }
 
     void loadSavedSettings()
@@ -84,6 +118,7 @@ public class AwakeNurseService extends Service implements Timer.CountDownIsOver 
         soundPoolPlayer = new SoundPoolPlayer(this, (AudioManager) getSystemService(Context.AUDIO_SERVICE), soundRepeatAmount);
         schedule = new Schedule(notifications, Time.fromStringToTime(toLoadWakeupTime), Time.fromStringToTime(toLoadSleepTime));
     }
+
 
     void runSchedule()
     {
@@ -115,17 +150,4 @@ public class AwakeNurseService extends Service implements Timer.CountDownIsOver 
         setNextNotification();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.d(My_TAG, "onDestroy");
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-
 }
-

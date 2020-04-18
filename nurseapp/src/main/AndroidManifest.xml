@@ -19,11 +19,16 @@
             </intent-filter>
         </activity>
 
+<!--        <service
+            android:name=".AwakeNurseIntentService"
+            android:enabled="true"
+            android:exported="true">
+        </service>-->
+
         <service
             android:name=".AwakeNurseService"
             android:enabled="true"
-            android:exported="true"
-            android:process=":Any">
+            android:exported="true">
         </service>
         
         <receiver
@@ -35,7 +40,5 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-
     </application>
-
 </manifest>

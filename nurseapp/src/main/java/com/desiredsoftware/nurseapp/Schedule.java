@@ -157,6 +157,12 @@ public class Schedule implements ISchedule {
     }
 
     @Override
+    public int GetNotificationsPerDay() {
+        Log.d(Log_Tag, "Количество напоминаний в день изменено");
+        return this.notificationsPerDay;
+    }
+
+    @Override
     public void SetToSleepTime(Time toSleepTime) {
         Log.d(Log_Tag, "Установлено новое время засыпания");
         this.toSleepTime = toSleepTime;

@@ -17,11 +17,6 @@ public class Timer extends CountDownTimer {
         this.countDownIsOver = callback;
     }
 
-    void doSomething(){
-//  countDownIsOver.TimerСallback();
-    }
-
-
     public Timer(long millisInFuture, long countDownInterval, IPlay spPlayer) {
         super(millisInFuture, countDownInterval);
         this.spPlayer = spPlayer;
@@ -36,7 +31,6 @@ public class Timer extends CountDownTimer {
         countDownIsOver.TimerCallback();
         spPlayer.StopSound();
         spPlayer.PlaySound();
-
     }
 
 
