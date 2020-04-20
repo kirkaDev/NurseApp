@@ -34,6 +34,8 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
     private String whatTimePickerWasPressed;
 
+    private boolean isToMute = false;
+
     IPlay soundPoolPlayer;
     ISchedule schedule;
 
@@ -42,7 +44,6 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
     SharedPreferences savedSettings;
 
     final static String APP_PREFERENCES = "mysettings";
-
     final static String PREFERENCES_WAKEUP_TIME = "wakeup";
     final static String PREFERENCES_TO_SLEEP_TIME = "sleep";
     final static String PREFERENCES_SOUND_REPEAT_AMOUNT = "sound_repeat";
@@ -54,6 +55,8 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
     Button btn_wakeUpTime;
     Button btn_toSleepTime;
+    Button btn_stopSchedule;
+
 
     EditText editText_notificationsAmount;
     EditText editText_soundRepeatAmount;
@@ -67,6 +70,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
         // TODO: Landcape layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
+        btn_stopSchedule = findViewById(R.id.btn_stopSchedule);
         btn_wakeUpTime = findViewById(R.id.btn_wakeUpTime);
         btn_toSleepTime = findViewById(R.id.btn_tpSleepTime);
         editText_notificationsAmount = findViewById(R.id.editText_notificationsAmount);
@@ -107,7 +111,9 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                     showNextNumberNotifications();
                 }
                 else
-                { Log.d(LOG_TAG, "Пользователь ввел некорректное количество напоминаний: " + notificationsFromEditText); }
+                { Log.d(LOG_TAG, "Вы ввели некорректное количество напоминаний: " + notificationsFromEditText +
+                "количество напоминаний должно быть 2 или более");
+                }
             }
         });
 
@@ -175,12 +181,35 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             }
         });
 
+        btn_stopSchedule.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+               if (isToMute)
+               {
+                   btn_stopSchedule.setText("Выключить");
+                   isToMute = false;
+               }
+               else
+               {
+                   isToMute = true;
+                   btn_stopSchedule.setText("Включить");
+               }
+               muteSchedule(isToMute);
+           }
+       });
+
         showSchedule();
         showNextNumberNotifications();
 
-
         startService(new Intent(this, AwakeNurseService.class));
+
     }
+
+    void muteSchedule(boolean isToMute)
+    {
+        startService(new Intent(this, AwakeNurseService.class).putExtra("isToMute", isToMute));
+    }
+
     void refreshRepeatNumber(int soundRepeat)
     {
         startService(new Intent(this, AwakeNurseService.class).

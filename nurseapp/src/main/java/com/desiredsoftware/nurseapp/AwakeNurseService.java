@@ -1,6 +1,6 @@
 package com.desiredsoftware.nurseapp;
 
-import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -8,16 +8,19 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.IBinder;
-import android.os.SystemClock;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 public class AwakeNurseService extends Service implements Timer.CountDownIsOver {
+
+
+    static final String NOTIFICATION_TEXT = "Пора принять лекарство ";
+    static final String NEXT_NOTIFICATION_TEXT = "Следующее напоминание в ";
 
     String My_TAG = "AwakeNurseService ";
 
@@ -37,23 +40,42 @@ public class AwakeNurseService extends Service implements Timer.CountDownIsOver 
     final static String PREFERENCES_SOUND_REPEAT_AMOUNT = "sound_repeat";
     final static String PREFERENCES_NOTIFICATIONS_AMOUNT = "notifications_amount";
 
+    Notification currentNotification;
+    PendingIntent pendingIntentForStartActivity;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
         Log.d(My_TAG, "onCreate");
+        Toast.makeText(this, "Работа в фоновом режиме запущена", Toast.LENGTH_LONG).show();
 
         savedSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
         loadSavedSettings();
         scheduleArray =  schedule.GetScheduleList();
 
         runSchedule();
+
+        Intent intentActivity = new Intent(this, MainActivity.class);
+
+        pendingIntentForStartActivity = PendingIntent.getActivity(this, 0 ,
+                intentActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+
+
+        currentNotification = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("NurseApp")
+                .setContentText(NEXT_NOTIFICATION_TEXT + scheduleArray.get(schedule.GetFirstNotificationIndex(Time.getCurrentTime())).getTimeValue()[0]+ ":"
+                        + scheduleArray.get(schedule.GetFirstNotificationIndex(Time.getCurrentTime())).getTimeValue()[1] + ":" +
+                        scheduleArray.get(schedule.GetFirstNotificationIndex(Time.getCurrentTime())).getTimeValue()[2])
+                .setContentIntent(pendingIntentForStartActivity)
+                .build();
+
+        startForeground(1, currentNotification);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //return super.onStartCommand(intent, flags, startId);
 
         int[] newWakeupTime = intent.getIntArrayExtra("wakeupTime");
         int[] newToSleepTime = intent.getIntArrayExtra("toSleepTime");
@@ -69,10 +91,41 @@ public class AwakeNurseService extends Service implements Timer.CountDownIsOver 
             this.scheduleArray = schedule.GetScheduleList();
 
             runSchedule();
+
+            currentNotification = new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentTitle("NurseApp")
+                    .setContentText(NEXT_NOTIFICATION_TEXT + scheduleArray.get(schedule.GetFirstNotificationIndex(Time.getCurrentTime())).getTimeValue()[0]+ ":"
+                            + scheduleArray.get(schedule.GetFirstNotificationIndex(Time.getCurrentTime())).getTimeValue()[1] + ":" +
+                            scheduleArray.get(schedule.GetFirstNotificationIndex(Time.getCurrentTime())).getTimeValue()[2])
+                    .setContentIntent(pendingIntentForStartActivity)
+                    .build();
+
+            startForeground(1, currentNotification);
         }
+
+        if (intent.getBooleanExtra("isToMute", false))
+            currentTimer.cancel();
+        else
+            runSchedule();
+
+
 
         return START_STICKY;
     }
+
+    void muteSchedule(boolean isToMute)
+    {
+        if (isToMute)
+        {
+            currentTimer.cancel();
+        }
+        else
+        {
+            runSchedule();
+        }
+    }
+
 
     void loadSavedSettings()
     {
@@ -93,6 +146,13 @@ public class AwakeNurseService extends Service implements Timer.CountDownIsOver 
         int currentPosition= schedule.GetFirstNotificationIndex(Time.getCurrentTime());
 
         Time firstNotification = scheduleArray.get(currentPosition);
+
+
+
+        Toast.makeText(this, NEXT_NOTIFICATION_TEXT + firstNotification.getTimeValue()[0]+ ":"
+                + firstNotification.getTimeValue()[1] + ":" +
+                firstNotification.getTimeValue()[2], Toast.LENGTH_LONG).show();
+
         int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), firstNotification))*1000;
 
         this.currentTimer = new Timer(timePeriod, timePeriod / 1000, this.soundPoolPlayer);
@@ -105,6 +165,23 @@ public class AwakeNurseService extends Service implements Timer.CountDownIsOver 
         Time nextNotification = schedule.GetNextNotifaction();
         int timePeriod = Time.getTimeValueOnSeconds(Time.GetTimeInterval(Time.getCurrentTime(), nextNotification))*1000;
 
+        Toast.makeText(this, NEXT_NOTIFICATION_TEXT + nextNotification.getTimeValue()[0]+ ":"
+                        + nextNotification.getTimeValue()[1] + ":" +
+                            nextNotification.getTimeValue()[2], Toast.LENGTH_LONG).show();
+
+        String stringForPrint = NEXT_NOTIFICATION_TEXT + nextNotification.getTimeValue()[0]+ ":"
+                + nextNotification.getTimeValue()[1] + ":" +
+                nextNotification.getTimeValue()[2];
+
+        currentNotification = new NotificationCompat.Builder(this)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("NurseApp")
+            .setContentText(stringForPrint)
+            .setContentIntent(pendingIntentForStartActivity)
+            .build();
+
+        startForeground(1, currentNotification);
+
         this.currentTimer = new Timer(timePeriod, timePeriod / 1000, this.soundPoolPlayer);
         this.currentTimer.registerCallBack(this);
         this.currentTimer.start();
@@ -112,6 +189,7 @@ public class AwakeNurseService extends Service implements Timer.CountDownIsOver 
 
     @Override
     public void TimerCallback() {
+        Toast.makeText(this, NOTIFICATION_TEXT, Toast.LENGTH_LONG).show();
         setNextNotification();
     }
 
@@ -126,6 +204,5 @@ public class AwakeNurseService extends Service implements Timer.CountDownIsOver 
     public IBinder onBind(Intent intent) {
         return null;
     }
-
 }
 

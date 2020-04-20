@@ -11,6 +11,7 @@ public class BootBroadReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+
         Intent serviceIntent = new Intent(context, AwakeNurseService.class);
         context.startService(serviceIntent);
     }
