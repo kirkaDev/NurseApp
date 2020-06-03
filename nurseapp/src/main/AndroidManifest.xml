@@ -3,6 +3,7 @@
     package="com.desiredsoftware.nurseapp">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <application
         android:allowBackup="true"
@@ -28,7 +29,7 @@
             android:exported="true">
         </service>
         
-        <receiver
+<!--        <receiver
             android:name=".BootBroadReceiver"
             android:enabled="true"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
@@ -36,6 +37,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-        </receiver>
+        </receiver>-->
     </application>
 </manifest>

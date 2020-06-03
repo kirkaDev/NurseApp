@@ -1,7 +1,11 @@
 package com.desiredsoftware.nurseapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.Operation;
+import androidx.work.WorkManager;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -22,6 +26,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.ListIterator;
+import java.util.concurrent.TimeUnit;
 
 public class  MainActivity extends AppCompatActivity implements TimePickerDialog.OnTimeSetListener {
 
@@ -49,9 +54,9 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
     final static String PREFERENCES_SOUND_REPEAT_AMOUNT = "sound_repeat";
     final static String PREFERENCES_NOTIFICATIONS_AMOUNT = "notifications_amount";
 
-    TextView textViewTimePoints;
-    TextView textViewNextNotificationsNPoints;
-    TextView txtView_nextNotificationNumber;
+    //TextView textViewTimePoints;
+    //TextView textViewNextNotificationsNPoints;
+    //TextView txtView_nextNotificationNumber;
 
     Button btn_wakeUpTime;
     Button btn_toSleepTime;
@@ -60,14 +65,14 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
     EditText editText_notificationsAmount;
     EditText editText_soundRepeatAmount;
-    EditText editText_showNextNotificationsNumber;
+    //EditText editText_showNextNotificationsNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // TODO: Landcape layout
+        // TODO: Landscape layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         btn_stopSchedule = findViewById(R.id.btn_stopSchedule);
@@ -75,10 +80,10 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
         btn_toSleepTime = findViewById(R.id.btn_tpSleepTime);
         editText_notificationsAmount = findViewById(R.id.editText_notificationsAmount);
         editText_soundRepeatAmount = findViewById(R.id.editText_soundRepeatAmount);
-        editText_showNextNotificationsNumber = findViewById(R.id.editText_showNextNotificationsNumber);
-        textViewTimePoints = findViewById(R.id.textViewTimePoints);
+        //editText_showNextNotificationsNumber = findViewById(R.id.editText_showNextNotificationsNumber);
+/*        textViewTimePoints = findViewById(R.id.textViewTimePoints);
         textViewNextNotificationsNPoints = findViewById(R.id.textViewNextNotificationsNPoints);
-        txtView_nextNotificationNumber = findViewById(R.id.txtView_nextNotificationNumber);
+        txtView_nextNotificationNumber = findViewById(R.id.txtView_nextNotificationNumber);*/
 
         savedSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
 
@@ -108,7 +113,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                     scheduleArray = schedule.GetScheduleList();
                     refreshNotificationsNumber(notificationsFromEditText);
                     showSchedule();
-                    showNextNumberNotifications();
+                    //showNextNumberNotifications();
                 }
                 else
                 { Log.d(LOG_TAG, "Вы ввели некорректное количество напоминаний: " + notificationsFromEditText +
@@ -139,7 +144,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             }
         });
 
-        editText_showNextNotificationsNumber.addTextChangedListener(new TextWatcher() {
+/*        editText_showNextNotificationsNumber.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             }
@@ -160,7 +165,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                     showNextNumberNotifications();
                 }
             }
-        });
+        });*/
 
 
         btn_wakeUpTime.setOnClickListener(new View.OnClickListener(){
@@ -199,9 +204,18 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
        });
 
         showSchedule();
-        showNextNumberNotifications();
+        //showNextNumberNotifications();
 
-        startService(new Intent(this, AwakeNurseService.class));
+
+        OneTimeWorkRequest testWorkRequest = new OneTimeWorkRequest.Builder(WorkerNurse.class)
+                .setInitialDelay(5, TimeUnit.SECONDS)
+                .build();
+
+        WorkManager.getInstance(this).enqueue(testWorkRequest);
+
+        //startService(new Intent(this, AwakeNurseService.class));
+
+
 
     }
 
@@ -288,7 +302,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             }
             scheduleArray = schedule.GetScheduleList();
             showSchedule();
-            showNextNumberNotifications();
+            //showNextNumberNotifications();
     }
 
     void saveSharedPreferences()
@@ -324,7 +338,7 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
     void showSchedule()
     {
-        textViewTimePoints.setText("");
+        //textViewTimePoints.setText("");
 
         ListIterator<Time> listIterator = scheduleArray.listIterator();
 
@@ -338,12 +352,12 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             int[] tPoints = tPoint.getTimeValue();
             if ((listIterator.nextIndex()-1)>= firstPointToShow)
             {
-                textViewTimePoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "; ");
+                //textViewTimePoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "; ");
             }
         }
     }
 
-    void showNextNumberNotifications()
+/*    void showNextNumberNotifications()
     {
         int numberToShow = Integer.parseInt(editText_showNextNotificationsNumber.getText().toString());
 
@@ -360,5 +374,5 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             int[] tPoints = tPoint.getTimeValue();
             textViewNextNotificationsNPoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "; ");
             }
-    }
+    }*/
 }

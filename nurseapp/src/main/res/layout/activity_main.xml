@@ -1,187 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
     <Button
         android:id="@+id/btn_stopSchedule"
         android:layout_width="wrap_content"
-        android:layout_height="35dp"
-        android:text="Выключить"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/btn_tpSleepTime"
-        app:layout_constraintStart_toEndOf="@+id/btn_wakeUpTime"
-        app:layout_constraintTop_toTopOf="@+id/btn_tpSleepTime" />
+        android:layout_height="wrap_content"
+        android:text="Выключить уведомления"
+        android:textSize="16sp"/>
 
-    <Button
-        android:id="@+id/btn_wakeUpTime"
-        android:layout_width="wrap_content"
-        android:layout_height="35dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginLeft="20dp"
-        android:text="подъем"
-        android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/btn_tpSleepTime" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btn_tpSleepTime"
-        android:layout_width="wrap_content"
-        android:layout_height="35dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:text="отбой"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtView_toSleep" />
+        <TextView
+            android:id="@+id/txtView_notificationsAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Напоминаний в день:"
+            android:textSize="16sp"/>
 
-    <EditText
-        android:id="@+id/editText_showNextNotificationsNumber"
-        android:layout_width="56dp"
-        android:layout_height="35dp"
-        android:ems="10"
-        android:gravity="center_horizontal"
-        android:inputType="number"
-        android:text="5"
-        android:textAlignment="center"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/editText_soundRepeatAmount"
-        app:layout_constraintStart_toEndOf="@+id/editText_notificationsAmount"
-        app:layout_constraintTop_toTopOf="@+id/editText_notificationsAmount" />
+        <EditText
+            android:id="@+id/editText_notificationsAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:textSize="16sp"/>
+    </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/txtView_soundRepeatAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Кол-во повторов сигнала:"
+            android:textSize="16sp"/>
 
-    <EditText
-        android:id="@+id/editText_soundRepeatAmount"
-        android:layout_width="56dp"
-        android:layout_height="35dp"
-        android:ems="10"
-        android:gravity="center_horizontal"
-        android:inputType="number"
-        android:textAlignment="center"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/txtView_soundRepeatAmount"
-        app:layout_constraintStart_toStartOf="@+id/txtView_soundRepeatAmount"
-        app:layout_constraintTop_toTopOf="@+id/editText_notificationsAmount" />
+        <EditText
+            android:id="@+id/editText_soundRepeatAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:textSize="16sp"/>
+    </LinearLayout>
 
-    <EditText
-        android:id="@+id/editText_notificationsAmount"
-        android:layout_width="56dp"
-        android:layout_height="35dp"
-        android:layout_marginTop="12dp"
-        android:ems="10"
-        android:gravity="center_horizontal"
-        android:inputType="number"
-        android:textAlignment="center"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/txtView_notificationsAmount"
-        app:layout_constraintStart_toStartOf="@+id/txtView_notificationsAmount"
-        app:layout_constraintTop_toBottomOf="@+id/txtView_notificationsAmount" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/txtView_wakeUp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Подъем:"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btn_wakeUpTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="подъем"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/btn_tpSleepTime" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/txtView_toSleep"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Отбой:"
+            android:textSize="16sp"/>
+
+        <Button
+            android:id="@+id/btn_tpSleepTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="отбой"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/txtView_Schedule2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:text="Напоминания на день: "
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText_notificationsAmount" />
+        android:textSize="16sp"/>
 
-    <TextView
-        android:id="@+id/txtView_showNextNotifications"
-        android:layout_width="53dp"
-        android:layout_height="44dp"
-        android:gravity="center_horizontal"
-        android:text="Показать след. нап-ий"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toTopOf="@+id/editText_notificationsAmount"
-        app:layout_constraintEnd_toStartOf="@+id/txtView_soundRepeatAmount"
-        app:layout_constraintHorizontal_bias="0.533"
-        app:layout_constraintStart_toEndOf="@+id/txtView_notificationsAmount"
-        app:layout_constraintTop_toTopOf="@+id/txtView_notificationsAmount"
-        app:layout_constraintVertical_bias="0.0" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="409dp"
+        android:layout_height="392dp"
+        tools:layout_editor_absoluteX="1dp"
+        tools:layout_editor_absoluteY="210dp" />
 
-    <TextView
-        android:id="@+id/textViewTimePoints"
-        android:layout_width="240dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/txtView_Schedule2"
-        app:layout_constraintStart_toStartOf="@+id/txtView_Schedule2"
-        app:layout_constraintTop_toBottomOf="@+id/txtView_Schedule2" />
-
-    <TextView
-        android:id="@+id/textViewNextNotificationsNPoints"
-        android:layout_width="230dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/textViewTimePoints"
-        app:layout_constraintStart_toStartOf="@+id/textViewTimePoints"
-        app:layout_constraintTop_toBottomOf="@+id/txtView_nextNotificationNumber" />
-
-    <TextView
-        android:id="@+id/txtView_soundRepeatAmount"
-        android:layout_width="93dp"
-        android:layout_height="44dp"
-        android:gravity="center_horizontal"
-        android:text="Кол-во повторов сигнала "
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/btn_tpSleepTime"
-        app:layout_constraintStart_toStartOf="@+id/btn_tpSleepTime"
-        app:layout_constraintTop_toTopOf="@+id/txtView_notificationsAmount" />
-
-    <TextView
-        android:id="@+id/txtView_wakeUp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Подъем"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/btn_wakeUpTime"
-        app:layout_constraintHorizontal_bias="0.529"
-        app:layout_constraintStart_toStartOf="@+id/btn_wakeUpTime"
-        app:layout_constraintTop_toTopOf="@+id/txtView_toSleep" />
-
-    <TextView
-        android:id="@+id/txtView_nextNotificationNumber"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Следующие N напоминаний: "
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/textViewTimePoints"
-        app:layout_constraintStart_toStartOf="@+id/textViewTimePoints"
-        app:layout_constraintTop_toBottomOf="@+id/textViewTimePoints" />
-
-    <TextView
-        android:id="@+id/txtView_toSleep"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Отбой"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/btn_tpSleepTime"
-        app:layout_constraintHorizontal_bias="0.574"
-        app:layout_constraintStart_toStartOf="@+id/btn_tpSleepTime"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/txtView_notificationsAmount"
-        android:layout_width="68dp"
-        android:layout_height="44dp"
-        android:layout_marginTop="12dp"
-        android:gravity="center_horizontal"
-        android:text="Напоминаний в день"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/btn_wakeUpTime"
-        app:layout_constraintStart_toStartOf="@+id/btn_wakeUpTime"
-        app:layout_constraintTop_toBottomOf="@+id/btn_wakeUpTime" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.appcompat.widget.LinearLayoutCompat>
