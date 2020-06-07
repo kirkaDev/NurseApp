@@ -3,6 +3,8 @@ package com.desiredsoftware.nurseapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.Operation;
 import androidx.work.WorkManager;
@@ -67,6 +69,11 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
     EditText editText_soundRepeatAmount;
     //EditText editText_showNextNotificationsNumber;
 
+    RecyclerView recyclerView;
+    ArrayList<RecyclerViewNotificationItem> recyclerViewItems;
+    private AdapterRecyclerViewNotifications adapter;
+    private RecyclerView.LayoutManager layoutManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +81,13 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
         // TODO: Landscape layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setHasFixedSize(true);
+
+        recyclerViewItems = new ArrayList<RecyclerViewNotificationItem>();
+
+
 
         btn_stopSchedule = findViewById(R.id.btn_stopSchedule);
         btn_wakeUpTime = findViewById(R.id.btn_wakeUpTime);
@@ -215,8 +229,12 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
 
         //startService(new Intent(this, AwakeNurseService.class));
 
+        adapter = new AdapterRecyclerViewNotifications(recyclerViewItems);
 
+        layoutManager = new LinearLayoutManager(this);
 
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(layoutManager);
     }
 
     void muteSchedule(boolean isToMute)
@@ -272,11 +290,11 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
                     btn_wakeUpTime.setText(strToSet);
                     schedule.SetWakeupTime(new Time(hours, minutes, 0));
 
-                    startService(new Intent(this, AwakeNurseService.class).
+                    /*startService(new Intent(this, AwakeNurseService.class).
                             putExtra("wakeupTime", schedule.GetWakeupTime().getTimeValue()).
                             putExtra("toSleepTime", schedule.GetToSleepTime().getTimeValue()).
                             putExtra("notificationsAmount", schedule.GetNotificationsPerDay()).
-                            putExtra("soundRepeatAmount", Integer.parseInt(editText_soundRepeatAmount.getText().toString())));
+                            putExtra("soundRepeatAmount", Integer.parseInt(editText_soundRepeatAmount.getText().toString())));*/
 
                     break;
                 }
@@ -352,6 +370,9 @@ public class  MainActivity extends AppCompatActivity implements TimePickerDialog
             int[] tPoints = tPoint.getTimeValue();
             if ((listIterator.nextIndex()-1)>= firstPointToShow)
             {
+                RecyclerViewNotificationItem item = new RecyclerViewNotificationItem(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2], true, null);
+                recyclerViewItems.add(item);
+
                 //textViewTimePoints.append(tPoints[0] + ":" + tPoints[1] + ":" + tPoints[2] + "; ");
             }
         }

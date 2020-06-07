@@ -99,7 +99,6 @@
 
     </LinearLayout>
 
-
     <TextView
         android:id="@+id/txtView_Schedule2"
         android:layout_width="wrap_content"
@@ -108,9 +107,11 @@
         android:textSize="16sp"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:layout_width="409dp"
-        android:layout_height="392dp"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="210dp" />
+        android:id="@+id/recyclerView"
+        android:background="@color/cardview_shadow_start_color"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>
